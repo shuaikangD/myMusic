@@ -1,0 +1,248 @@
+<template>
+
+    <div class="myye">
+        <div class="input">
+            <!-- <i @click="find">搜索</i> -->
+            <input type="text" name="" placeholder="搜索歌曲、歌手" value="" id="sr"  @focus="haha" @blur="xs" @input='bd'>
+        </div>
+        <div class="hot">
+            <h3>
+                热门搜索{{msg}}
+            </h3>
+            <ul>
+                <li v-for="(item,index) in songList" :key = 'index' @click="soso(item.k)">
+                    {{item.k}}
+                </li>
+            </ul>
+        </div>
+        <div class="his">
+            <h3>
+                <span>搜索历史</span>
+                <span @click="delAll">删除</span>
+            </h3>
+            <ul>
+                <li v-for='(item,index) in hisList'>
+                    <span>{{item}}</span>
+                    <span @click="del(index)">X</span>
+                </li>
+            </ul>
+        </div>
+        <!-- <div class="wrapper"> -->
+            <ul class="content" v-show="show">
+                <li v-for="(item,index) in xinxi">
+                    {{item.songname}}-{{item.singer[0].name}}
+                </li>
+            </ul>
+        <!-- </div> -->
+    </div>
+</template>
+<script>
+import sousuo from '../../common/data/sousuo.js';
+import $ from '../../../node_modules/jquery/dist/jquery.min.js';
+import jsonp from '../../common/js/jsonp.js';
+import Scroll from 'better-scroll';
+export default {
+    data(){
+        return{
+            name:'我是我的页',
+            songList:[],
+            hisList:[],
+            xinxi:[],
+            show:false,
+            msg:''
+        }
+    },
+    methods:{
+        sousuo(){
+            setTimeout(()=>{
+                let list = sousuo.data.hotkey;
+                let tenList=[]
+                list.forEach((item,index)=>{
+                    if(index<=9){
+                        tenList.push(item);
+                    }
+                })
+                this.songList= tenList;
+                this.$nextTick(()=>{
+                    this.initScroll();
+                })
+            },100)
+        },
+        
+        soso(item){
+            $('#sr').val(item)
+            $('#sr').focus();
+            this.bd();
+        },
+        delAll(){
+            this.hisList.splice(0,this.hisList.length)
+        },
+        del(index){
+            // console.log(1)
+            this.hisList.splice(index,1);
+        },
+        bd(){
+            // var evt = e || window.event;
+            // e.preventDefault();
+            if(this.show===false){
+                this.show===true;
+            }
+            let showNum = 15;
+            let val = $('#sr').val();
+            // console.log(val);
+            let url = `/input/music/api/search?g_tk=1928093487&inCharset=utf-8&outCharset=utf-8&notice=0&format=json&w=${val}&p=1&perpage=20&n=20&catZhida=1&zhidaqu=1&t=0&flag=1&ie=utf-8&sem=1&aggr=0&remoteplace=txt.mqq.all&uin=0&needNewCode=1&platform=h5`
+            this.$axios.get(url)
+            .then((response)=>{
+                let list = response.data.data.song.list;
+                // console.log(list);
+                let arr = [];
+                for (let index = 0; index < list.length; index++) {
+                    if(index<showNum){
+                        arr.push(list[index])
+                    }
+                }
+                this.xinxi = arr;
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        },
+        haha(){
+            this.show = true;
+        },
+        xs(){
+            if($('#sr').val()===''){
+
+            }else{
+                if(this.hisList.length!==0){
+                    for (let index = 0; index < this.hisList.length; index++) {
+                      if($('#sr').val()!==this.hisList[index]){
+                        this.hisList.push($('#sr').val());
+                      }
+                    }
+                }else{
+                    this.hisList.push($('#sr').val());
+                }
+            }
+            this.show = false;
+        },
+        initScroll(){
+            // this.scroll = new Scroll('.wrapper')
+        }
+    },
+    created(){
+        this.sousuo();
+    }
+}
+</script>
+<style lang="less" scoped>
+    @import '../../common/style/index.less';
+    .myye{
+        .w(375);
+        height: 100%;
+        .pan-t(88);
+        color: #fff;
+        .input{
+            .w(335);
+            .h(40);
+            .pan(20,20,20,20);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            // i{
+            //     // float: left;
+            //     .w(30);
+            //     .h(40);
+            //     border-radius: 10px 0 0 10px;
+            //     background: #333;
+            //     color:@fontSizeNor;
+            //     display: block;
+            //     position: absolute;
+            //     .t(21);
+            //     .l(23);
+            //     font-size: @fontSize-s;
+            //     font-style: normal;
+            // }
+            input{
+                float: left;
+                border: 1px solid #222;
+                .w(335);
+                .h(40);
+                border-radius: 10px 10px 10px 10px;
+                background: #333;
+                color:@fontSizeNor;
+                position: absolute;
+                .t(20);
+                .r(20);
+                outline: none;
+            }
+        }
+        .hot{
+            .w(335);
+            .h(168);
+            .pan(0,20,20,20);
+            h3{
+                font-size: @fontSize-l;
+                .mar(0,0,30,0);
+                color: @fontSizeNor;
+            }
+            ul{
+                overflow: hidden;
+                li{
+                    .pan(5,10,5,10);
+                    .mar(0,20,10,0);
+                    float: left;
+                    font-size: @fontSize-s;
+                    color:@fontSizeNor;
+                    background:#333;
+                    border-radius:10px; 
+                }
+            }
+        }
+        .his{
+            .w(335);
+            .pan(20,20,20,20);
+            h3{
+                .w(335);
+                .h(40);
+                display: flex;
+                justify-content: space-between;
+                font-size: @fontSize-s;
+                color: @fontSizeNor;
+            }
+            ul{
+                li{
+                    .h(40);
+                    .w(335);
+                    font-size: @fontSize-l;
+                    color:@fontSizeNor;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+            }
+        }
+            .content{
+                .w(335);
+                position: fixed;
+                .t(168);
+                .l(0);
+                .pan(0,20,0,20);
+                // height: 100%;
+                z-index: 999;
+                background: @bgColor;
+                li{
+                    
+                    .w(335);
+                    .mar(0,0,20,0);
+                    // background: #333;
+                    color:@fontSizeNor;
+                    font-size: @fontSize-m;
+                    white-space: nowrap;  
+                    text-overflow:ellipsis; 
+                    overflow:hidden;
+                }
+            }
+    }
+    </style>
